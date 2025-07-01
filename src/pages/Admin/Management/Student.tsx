@@ -3,8 +3,9 @@ import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import ComponentCard from "../../../components/common/ComponentCard";
 import PageMeta from "../../../components/common/PageMeta";
 import StudentTable from "../../../components/manager/student/StudentTable";
-import { getAllStudents } from "../../../api/api"; // cần hỗ trợ truyền page/size
 import ReactPaginate from "react-paginate";
+import Button from "../../../components/ui/button/Button";
+import { getAllStudents } from "../../../api/api";
 
 interface StudentList {
     studentId: number;
@@ -44,8 +45,8 @@ const Student = () => {
             <PageBreadcrumb pageTitle="Students" />
             <div className="space-y-6">
                 <ComponentCard title="Students">
+                    <Button className="space-y-6">Add a Student</Button>
                     <StudentTable students={students} />
-
                     <div className="flex justify-center mt-4">
                         <ReactPaginate
                             previousLabel={"←"}

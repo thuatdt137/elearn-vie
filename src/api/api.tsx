@@ -1,26 +1,54 @@
-// src/api/api.tsx
-import axios from 'axios';
+import instance from "../utils/axios";
 
-const BASE_URL = 'http://localhost:5094/api';
 
-const apiClient = axios.create({
-    baseURL: BASE_URL,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-});
 
 export const getAllStudents = async ({ page, size }: { page: number; size: number }) => {
-    const response = await apiClient.get(`/Students?pageNumber=${page}&pageSize=${size}`);
+    const response = await instance.get(`/Students?pageNumber=${page}&pageSize=${size}`);
     return response.data;
 };
 
-export const addAttraction = async (attractionData: any) => {
-    const response = await apiClient.post('/addAttraction', attractionData);
+export const getCurrentUser = async () => {
+    const response = await instance.get('/Auth/me', {
+        headers: {
+            "Content-Type": "application/json",
+            "X-Client-Platform": "web",
+        }
+    });
     return response.data;
 };
 
-export const getAttraction = async (attractionId: string) => {
-    const response = await apiClient.get(`/attractions/${attractionId}`);
+export const postLogin = async ({ username, password }: { username: string; password: string }) => {
+    const response = await instance.post("/Auth/login", {
+        username,
+        password
+    }, {
+        headers: {
+            "Content-Type": "application/json",
+            "X-Client-Platform": "web",
+        }
+    });
+
     return response.data;
 };
+
+export const postRefreshToken = async (refreshToken?: string) => {
+    const response = await instance.post("/Auth/refresh-token",
+        refreshToken ? { refreshToken } : {},
+        {
+            headers: {
+                "X-Client-Platform": "web"
+            },
+            withCredentials: true
+        }
+    );
+
+    return response.data;
+};
+
+export const postLogout = async () => {
+    const response = await instance.post("/Auth/logout", {}, {
+        withCredentials: true
+    });
+    return response.data;
+};
+
