@@ -8,7 +8,7 @@ Pods/
 
 ### Firebase ###
 .idea
-**/node_modules/*
+node_modules/
 **/.firebaserc
 
 ### Firebase Patch ###
