@@ -8,8 +8,6 @@ import { getCurrentUser, postLogin } from "../../api/api";
 import { useAuth } from "../../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import axios from "axios";
-import { h } from "@fullcalendar/core/preact.js";
 
 
 export default function SignInForm() {
@@ -20,7 +18,7 @@ export default function SignInForm() {
     password: "",
   });
 
-  const { setAccessToken, setUser, user } = useAuth();
+  const { setUser } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,41 +39,22 @@ export default function SignInForm() {
       });
 
       const token = res.data?.accessToken;
-
       if (token) {
-        toast.success("Login successfully!");
-        setAccessToken(token);
         const meRes = await getCurrentUser();
-        setUser(meRes.data);
-
-
-        navigate("/");
+        const userData = meRes.data;
+        setUser(userData);
+        localStorage.setItem("user", JSON.stringify(userData));
+        localStorage.removeItem("isLoggedOut");
+        toast.success("Đăng nhập thành công!");
+        navigate("/", { replace: true });
       } else {
-        toast.error("Login fail: " + res.data?.message || "Unknown Error");
+        toast.error(res.data?.message || "Đăng nhập thất bại!");
       }
-    } catch (error) {
-      console.error("Đăng nhập thất bại", error);
-      toast.error("Connection error or wrong account!");
-
+    } catch (error: any) {
+      console.error("Đăng nhập thất bại:", error);
+      toast.error(error.response?.data?.message || "Lỗi kết nối hoặc tài khoản không đúng!");
     }
   };
-
-
-
-  useEffect(() => {
-    const checkLogin = async () => {
-      const res = await axios.get("http://localhost:3000/api/Auth/me", {
-        withCredentials: true,
-      });
-      if (res.status === 200) {
-        console.log("User is already logged in", res.data);
-        navigate("/");
-      }
-      console.log("User is already logged in", res.data?.status);
-    };
-    checkLogin();
-  }, [navigate]);
-
 
   return (
     <div className="flex flex-col flex-1">

@@ -7,25 +7,30 @@ const instance = axios.create({
     withCredentials: true,
 });
 
-// Tạo biến lưu context (phải inject từ component React)
 let logoutFromContext: (() => void) | null = null;
+let navigateToSignIn: (() => void) | null = null;
+
 export const setLogoutHandler = (fn: () => void) => {
     logoutFromContext = fn;
+};
+
+export const setNavigateHandler = (fn: () => void) => {
+    navigateToSignIn = fn;
 };
 
 let isRefreshing = false;
 let failedQueue: any[] = [];
 
 const processQueue = (error: any, token: string | null = null) => {
-    failedQueue.forEach(prom => {
+    failedQueue.forEach((prom) => {
         token ? prom.resolve(token) : prom.reject(error);
     });
     failedQueue = [];
 };
 
 instance.interceptors.response.use(
-    res => res,
-    async err => {
+    (res) => res,
+    async (err) => {
         const originalRequest = err.config;
 
         if (err.response?.status === 401 && !originalRequest._retry) {
@@ -48,21 +53,21 @@ instance.interceptors.response.use(
                 const res = await instance.post("/Auth/refresh-token");
                 const newAccessToken = res.data.accessToken;
                 processQueue(null, newAccessToken);
-
                 originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
                 return instance(originalRequest);
             } catch (refreshError) {
                 processQueue(refreshError, null);
-
-                // GỌI LOGOUT KHI REFRESH THẤT BẠI
-                if (logoutFromContext) {
-                    console.log("👉 Logout from context triggered.");
-                    toast.error("Your session expired");
-                    logoutFromContext();
+                if (navigateToSignIn) {
+                    console.log("👉 Navigating to signin due to invalid tokens.");
+                    toast.error("Your session has expired. Please sign in again.");
+                    navigateToSignIn();
                 } else {
-                    console.warn("⚠️ logoutFromContext is NULL!");
+                    console.warn("⚠️ navigateToSignIn is NULL!");
+                    toast.error("Your session has expired. Please sign in again.");
                 }
-
+                if (logoutFromContext) {
+                    logoutFromContext();
+                }
                 return Promise.reject(refreshError);
             } finally {
                 isRefreshing = false;

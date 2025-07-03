@@ -20,7 +20,7 @@ const Student = () => {
     const [students, setStudents] = useState<StudentList[]>([]);
     const [currentPage, setCurrentPage] = useState(0); // 0-indexed
     const [totalPages, setTotalPages] = useState(1);
-    const studentsPerPage = 1;
+    const studentsPerPage = 10;
 
     const fetchStudents = async (page: number) => {
         try {
