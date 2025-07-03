@@ -28,17 +28,14 @@ import { ScrollToTop } from "./components/common/ScrollToTop";
 
 const PublicRoute = () => {
   const { user, loading } = useAuth();
+  console.log("PublicRoute: user =", user, "loading =", loading); // Debug
   if (loading) return <div>Đang tải phiên đăng nhập...</div>;
   return user ? <Navigate to="/" replace /> : <Outlet />;
 };
 
 const ProtectedRoute = () => {
   const { user, loading } = useAuth();
-  const isLoggedOut = localStorage.getItem("isLoggedOut");
-  const storedUser = localStorage.getItem("user");
-  if (!storedUser && (isLoggedOut === "true" || !isLoggedOut)) {
-    return <Navigate to="/signin" replace />;
-  }
+  console.log("ProtectedRoute: user =", user, "loading =", loading); // Debug
   if (loading) return <div>Đang tải phiên đăng nhập...</div>;
   return user ? <Outlet /> : <Navigate to="/signin" replace />;
 };

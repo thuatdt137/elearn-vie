@@ -50,10 +50,14 @@ instance.interceptors.response.use(
             isRefreshing = true;
 
             try {
-                const res = await instance.post("/Auth/refresh-token");
+                const res = await axios.post("/Auth/refresh-token",
+                    { withCredentials: true, }
+                );
+                if (res.status === 401) {
+                    console.error("Failed to refresh token:", res);
+                }
                 const newAccessToken = res.data.accessToken;
                 processQueue(null, newAccessToken);
-                originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
                 return instance(originalRequest);
             } catch (refreshError) {
                 processQueue(refreshError, null);

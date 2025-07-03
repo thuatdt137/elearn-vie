@@ -1,4 +1,4 @@
-// AuthContext.tsx
+// context/AuthContext.tsx
 import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -22,7 +22,10 @@ interface UserInfo {
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-    const [user, setUser] = useState<UserInfo | null>(null);
+    const [user, setUser] = useState<UserInfo | null>(() => {
+        const storedUser = localStorage.getItem("user");
+        return storedUser ? JSON.parse(storedUser) : null;
+    });
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
@@ -41,13 +44,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     useEffect(() => {
+        console.log("AuthContext useEffect: user =", user, "loading =", loading); // Debug
         setNavigateHandler(() => navigate("/signin", { replace: true }));
 
         const path = window.location.pathname;
         if (path === "/signin" || path === "/signup") {
             setLoading(false);
-            const userStored = localStorage.getItem("user");
-            if (userStored) {
+            if (user) {
+                console.log("Redirecting from /signin to / due to user existing"); // Debug
                 navigate("/", { replace: true });
             }
             return;
@@ -56,22 +60,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const fetchUser = async () => {
             const storedUser = localStorage.getItem("user");
             const isLoggedOut = localStorage.getItem("isLoggedOut");
-            if (!storedUser && (isLoggedOut === "true" || !isLoggedOut)) {
-                setUser(null);
+
+            if (storedUser && !isLoggedOut) {
+                console.log("Using stored user:", JSON.parse(storedUser)); // Debug
+                setUser(JSON.parse(storedUser));
                 setLoading(false);
-                navigate("/signin", { replace: true });
+                localStorage.removeItem("isLoggedOut");
                 return;
             }
 
+            // Nếu không có storedUser, thử gọi API để khôi phục user
             try {
-                if (storedUser) {
-                    setUser(JSON.parse(storedUser));
-                    setLoading(false);
-                    localStorage.removeItem("isLoggedOut");
-                    return;
-                }
-
+                console.log("Attempting to fetch user from API"); // Debug
                 const res = await getCurrentUser();
+                console.log("Fetched user:", res.data); // Debug
                 setUser(res.data);
                 localStorage.setItem("user", JSON.stringify(res.data));
                 localStorage.removeItem("isLoggedOut");
@@ -80,7 +82,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 setUser(null);
                 localStorage.removeItem("user");
                 localStorage.setItem("isLoggedOut", "true");
-                navigate("/signin", { replace: true });
+                navigate("/signin", { replace: false });
             } finally {
                 setLoading(false);
             }
