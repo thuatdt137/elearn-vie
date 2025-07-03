@@ -54,7 +54,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 console.log("Redirecting from /signin to / due to user existing"); // Debug
                 navigate("/", { replace: true });
             }
-            return;
         }
 
         const fetchUser = async () => {

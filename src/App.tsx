@@ -40,6 +40,13 @@ const ProtectedRoute = () => {
   return user ? <Outlet /> : <Navigate to="/signin" replace />;
 };
 
+const TrainingDepartmentRoute = () => {
+  const { user, loading } = useAuth();
+  console.log("SchoolRoute: user =", user, "loading =", loading); // Debug
+  if (loading) return <div>Đang tải phiên đăng nhập...</div>;
+  return user && user.role === "TrainingDepartment" ? <Outlet /> : <Navigate to="/" replace />;
+}
+
 function AppRoutes() {
   const { logout } = useAuth();
   React.useEffect(() => {
@@ -69,6 +76,12 @@ function AppRoutes() {
           <Route path="/line-chart" element={<LineChart />} />
           <Route path="/bar-chart" element={<BarChart />} />
           <Route path="/student" element={<Student />} />
+        </Route>
+      </Route>
+      <Route element={<TrainingDepartmentRoute />}>
+        <Route element={<AppLayout />}>
+
+          <Route path="/school" element={<div>School Dashboard</div>} />
         </Route>
       </Route>
       <Route path="*" element={<NotFound />} />

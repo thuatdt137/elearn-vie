@@ -19,6 +19,7 @@ import { useSidebar } from "../context/SidebarContext";
 import SidebarWidget from "./SidebarWidget";
 
 import { IoPeopleOutline } from "react-icons/io5";
+import { useAuth } from "../context/AuthContext";
 
 
 type NavItem = {
@@ -100,9 +101,24 @@ const othersItems: NavItem[] = [
   },
 ];
 
+const trainingDepartmentItems: NavItem[] = [
+  {
+    icon: <PieChartIcon />,
+    name: "Student Management",
+    subItems: [
+      { name: "Line Chart", path: "/line-chart", pro: false },
+      { name: "Bar Chart", path: "/bar-chart", pro: false },
+    ],
+  },
+];
+
+
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const location = useLocation();
+  const { user } = useAuth();
+
+  const isTrainingDepartment = user?.role === "TrainingDepartment";
 
   const [openSubmenu, setOpenSubmenu] = useState<{
     type: "main" | "others";
