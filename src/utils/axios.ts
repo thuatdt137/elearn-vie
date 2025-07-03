@@ -47,8 +47,6 @@ instance.interceptors.response.use(
             try {
                 const res = await instance.post("/Auth/refresh-token");
                 const newAccessToken = res.data.accessToken;
-
-                // Có thể set vào localStorage hoặc context (tuỳ bạn)
                 processQueue(null, newAccessToken);
 
                 originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;

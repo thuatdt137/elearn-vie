@@ -1,5 +1,9 @@
 // App.tsx
-import { BrowserRouter as Router, Routes, Route } from "react-router";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import React from "react";
+import { Bounce, ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
+
 import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
 import NotFound from "./pages/OtherPage/NotFound";
@@ -17,75 +21,71 @@ import BasicTables from "./pages/Tables/BasicTables";
 import FormElements from "./pages/Forms/FormElements";
 import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
-import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import Student from "./pages/Admin/Management/Student";
+
+import { ScrollToTop } from "./components/common/ScrollToTop";
 import { AuthProvider, useAuth } from "./context/AuthContext";
-import React from "react";
 import { setLogoutHandler } from "./utils/axios";
-import { ToastContainer } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
 
-// 👉 Di chuyển logic useAuth vào component riêng
-function AppRoutes() {
-  const { logout, loading } = useAuth();
+function ProtectedRoutes() {
+  const { logout, loading, user } = useAuth();
 
-  // Gắn hàm logout vào axios interceptor
   React.useEffect(() => {
     setLogoutHandler(logout);
   }, [logout]);
 
-  if (loading && window.location.pathname !== "/signin") {
+  const currentPath = window.location.pathname;
+  const unprotectedPaths = ["/signin"];
+
+
+
+  if (!user && !unprotectedPaths.includes(currentPath)) {
+    return <Navigate to="/signin" replace />;
+  }
+  if (loading) {
     return <div>Đang tải phiên đăng nhập...</div>;
-  } else {
+  }
+  return (
+    <Routes>
+      {/* Auth Routes */}
+      <Route path="/signin" element={<SignIn />} />
+      <Route path="/signup" element={<SignUp />} />
 
+      {/* Protected Routes */}
+      <Route element={<AppLayout />}>
+        <Route index path="/" element={<Home />} />
+        <Route path="/profile" element={<UserProfiles />} />
+        <Route path="/calendar" element={<Calendar />} />
+        <Route path="/blank" element={<Blank />} />
+        <Route path="/form-elements" element={<FormElements />} />
+        <Route path="/basic-tables" element={<BasicTables />} />
+        <Route path="/alerts" element={<Alerts />} />
+        <Route path="/avatars" element={<Avatars />} />
+        <Route path="/badge" element={<Badges />} />
+        <Route path="/buttons" element={<Buttons />} />
+        <Route path="/images" element={<Images />} />
+        <Route path="/videos" element={<Videos />} />
+        <Route path="/line-chart" element={<LineChart />} />
+        <Route path="/bar-chart" element={<BarChart />} />
+        <Route path="/student" element={<Student />} />
+      </Route>
 
-    return (
-      <>
-        <Router>
-          <ScrollToTop />
-          <Routes>
-            {/* Dashboard Layout */}
-            <Route element={<AppLayout />}>
-              <Route index path="/" element={<Home />} />
+      {/* Fallback */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+}
 
-              {/* Others Page */}
-              <Route path="/profile" element={<UserProfiles />} />
-              <Route path="/calendar" element={<Calendar />} />
-              <Route path="/blank" element={<Blank />} />
-
-              {/* Forms */}
-              <Route path="/form-elements" element={<FormElements />} />
-
-              {/* Tables */}
-              <Route path="/basic-tables" element={<BasicTables />} />
-
-              {/* Ui Elements */}
-              <Route path="/alerts" element={<Alerts />} />
-              <Route path="/avatars" element={<Avatars />} />
-              <Route path="/badge" element={<Badges />} />
-              <Route path="/buttons" element={<Buttons />} />
-              <Route path="/images" element={<Images />} />
-              <Route path="/videos" element={<Videos />} />
-
-              {/* Charts */}
-              <Route path="/line-chart" element={<LineChart />} />
-              <Route path="/bar-chart" element={<BarChart />} />
-
-              {/* Admin */}
-              <Route path="/student" element={<Student />} />
-            </Route>
-
-            {/* Auth Layout */}
-            <Route path="/signin" element={<SignIn />} />
-            <Route path="/signup" element={<SignUp />} />
-
-            {/* Fallback Route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Router>
+// Bọc ProtectedRoutes bên trong Router
+export default function App() {
+  return (
+    <AuthProvider>
+      <Router>
+        <ScrollToTop />
+        <ProtectedRoutes />
         <ToastContainer
-          position="top-right"
+          position="bottom-right"
           autoClose={5000}
           hideProgressBar={false}
           newestOnTop={false}
@@ -95,17 +95,9 @@ function AppRoutes() {
           draggable
           pauseOnHover
           theme="light"
+          transition={Bounce}
         />
-      </>
-    );
-  }
-}
-
-// 👉 Bọc AppRoutes bên trong AuthProvider
-export default function App() {
-  return (
-    <AuthProvider>
-      <AppRoutes />
+      </Router>
     </AuthProvider>
   );
 }

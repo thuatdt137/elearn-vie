@@ -36,21 +36,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     useEffect(() => {
+        const path = window.location.pathname;
+        if (path === "/signin") {
+            setLoading(false);
+            return;
+        }
 
         const fetchUser = async () => {
-
             try {
                 const res = await getCurrentUser();
                 setUser(res.data);
-
             } catch (err) {
                 setUser(null);
             } finally {
                 setLoading(false);
             }
         };
+
         fetchUser();
     }, []);
+
 
     return (
         <AuthContext.Provider value={{ accessToken, setAccessToken, user, setUser, logout, loading }}>

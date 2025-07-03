@@ -8,6 +8,8 @@ import { getCurrentUser, postLogin } from "../../api/api";
 import { useAuth } from "../../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import axios from "axios";
+import { h } from "@fullcalendar/core/preact.js";
 
 
 export default function SignInForm() {
@@ -41,7 +43,7 @@ export default function SignInForm() {
       const token = res.data?.accessToken;
 
       if (token) {
-        toast("Login successfully!");
+        toast.success("Login successfully!");
         setAccessToken(token);
         const meRes = await getCurrentUser();
         setUser(meRes.data);
@@ -49,24 +51,30 @@ export default function SignInForm() {
 
         navigate("/");
       } else {
-        toast("Login fail: " + res.data?.message || "Unknown Error");
+        toast.error("Login fail: " + res.data?.message || "Unknown Error");
       }
     } catch (error) {
       console.error("Đăng nhập thất bại", error);
-      toast("Connection error or wrong account!");
+      toast.error("Connection error or wrong account!");
 
     }
   };
 
-  const checkLogin = () => {
-    if (user) {
-      navigate("/");
-    }
-  };
+
 
   useEffect(() => {
+    const checkLogin = async () => {
+      const res = await axios.get("http://localhost:3000/api/Auth/me", {
+        withCredentials: true,
+      });
+      if (res.status === 200) {
+        console.log("User is already logged in", res.data);
+        navigate("/");
+      }
+      console.log("User is already logged in", res.data?.status);
+    };
     checkLogin();
-  }, [checkLogin]);
+  }, [navigate]);
 
 
   return (
