@@ -43,7 +43,7 @@ const navItems: NavItem[] = [
   {
     icon: <IoPeopleOutline />,
     name: "Students",
-    path: "/student ",
+    path: "/student",
   },
   {
     icon: <UserCircleIcon />,
@@ -103,12 +103,9 @@ const othersItems: NavItem[] = [
 
 const trainingDepartmentItems: NavItem[] = [
   {
-    icon: <PieChartIcon />,
-    name: "Student Management",
-    subItems: [
-      { name: "Line Chart", path: "/line-chart", pro: false },
-      { name: "Bar Chart", path: "/bar-chart", pro: false },
-    ],
+    icon: <IoPeopleOutline />,
+    name: "Students",
+    path: "/student",
   },
 ];
 
@@ -379,7 +376,7 @@ const AppSidebar: React.FC = () => {
             </div>
           </div>
         </nav>
-        {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null}
+        {/* {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null} */}
       </div>
     </aside>
   );
