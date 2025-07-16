@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react";
-import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
+import { useNavigate, useParams } from "react-router";
+import { toast } from "react-toastify";
+
 import ComponentCard from "../../../components/common/ComponentCard";
 import PageMeta from "../../../components/common/PageMeta";
+import PageBreadcrumbCustomize from "../../../components/common/PageBreadcrumbCustomize";
 import { getAllSchools, getStudentById, getClassList, updateStudent } from "../../../api/api";
-import { useParams } from "react-router";
 import Label from "../../../components/form/Label";
 import Input from "../../../components/form/input/InputField";
 import Select from "../../../components/form/Select";
 import Button from "../../../components/ui/button/Button";
-import PageBreadcrumbCustomize from "../../../components/common/PageBreadCrumbCustomize";
 
 interface StudentDetails {
+    studentId: number;
     identityCode: string;
     firstName: string;
     lastName: string;
@@ -24,11 +26,6 @@ interface StudentDetails {
 interface School {
     schoolId: number;
     schoolName: string;
-    schoolType: string;
-    address: string;
-    phone: string;
-    email: string;
-    principalId: number | null;
 }
 
 interface Class {
@@ -38,93 +35,94 @@ interface Class {
 
 export default function StudentDetails() {
     const { id } = useParams();
-    const [schoolList, setSchoolList] = useState<School[]>([]);
-    const [classList, setClassList] = useState<Class[]>([]);
-    const [selectedSchoolId, setSelectedSchoolId] = useState<string>("");
-    const [selectedClassId, setSelectedClassId] = useState<string>("");
+    const navigate = useNavigate();
 
     const [student, setStudent] = useState<StudentDetails>({
+        studentId: 0,
         identityCode: "",
         firstName: "",
         lastName: "",
         dateOfBirth: "",
         phone: "",
         address: "",
+        schoolId: 0,
+        classId: 0,
     });
 
-    const fetchSchoolList = async () => {
-        try {
-            const response = await getAllSchools({});
-            setSchoolList(response.data);
-        } catch (err) {
-            console.error(err);
-        }
-    };
+    const [schoolList, setSchoolList] = useState<School[]>([]);
+    const [classList, setClassList] = useState<Class[]>([]);
 
-    const fetchClassList = async (schoolId: number) => {
-        try {
-            const response = await getClassList({ schoolId });
-            if (response.statusCode === 404) {
-                setClassList([]);
-                setSelectedClassId("");
-                return;
+    useEffect(() => {
+        const init = async () => {
+            try {
+                const schoolRes = await getAllSchools({});
+                setSchoolList(schoolRes.data);
+            } catch (err) {
+                console.error(err);
+                toast.error("Failed to load school list");
             }
-            setClassList(response.data);
+
+            if (id) {
+                try {
+                    const studentRes = await getStudentById(parseInt(id));
+                    const studentData = studentRes.data;
+                    setStudent(studentData);
+
+                    if (studentData.schoolId) {
+                        await loadClassList(studentData.schoolId);
+                    }
+                } catch (err) {
+                    console.error(err);
+                    toast.error("Failed to load student data");
+                }
+            }
+        };
+
+        init();
+    }, [id]);
+
+    const loadClassList = async (schoolId: number) => {
+        try {
+            const res = await getClassList({ schoolId });
+            if (res.statusCode === 404) {
+                setClassList([]);
+            } else {
+                setClassList(res.data);
+            }
         } catch (err) {
             console.error(err);
             setClassList([]);
-            setSelectedClassId("");
-        }
-    };
-
-    const fetchStudent = async (id: number) => {
-        try {
-            const response = await getStudentById(id);
-            const studentData = response.data;
-            setStudent(studentData);
-            if (studentData.schoolId) {
-                setSelectedSchoolId(studentData.schoolId.toString());
-            }
-            if (studentData.classId) {
-                setSelectedClassId(studentData.classId.toString());
-            }
-        } catch (err) {
-            console.error(err);
+            toast.error("Failed to load class list");
         }
     };
 
     const handleSave = async () => {
         try {
-            // const response = await updateStudent(id, student);
-            // if (response.status === 200) {
-            //     // Handle successful update
-            // }
+            const studentId = parseInt(id || "-1");
+            if (studentId > 0) {
+                const response = await updateStudent(studentId, student);
+                if (response.status === 200) {
+                    toast.success("Student updated successfully");
+                    navigate("/student");
+                } else {
+                    toast.error(response.message || "Failed to update student");
+                }
+            }
         } catch (err) {
             console.error(err);
+            toast.error("Error while updating student");
         }
     };
 
-    useEffect(() => {
-        fetchSchoolList();
-        if (id) {
-            fetchStudent(parseInt(id));
-        }
-    }, [id]);
+    const handleSchoolChange = (value: string) => {
+        const newSchoolId = parseInt(value);
+        setStudent((prev) => ({ ...prev, schoolId: newSchoolId, classId: undefined }));
+        loadClassList(newSchoolId);
+    };
 
-    useEffect(() => {
-        if (selectedSchoolId) {
-            fetchClassList(parseInt(selectedSchoolId));
-        } else {
-            setClassList([]);
-            setSelectedClassId("");
-        }
-    }, [selectedSchoolId]);
-
-    useEffect(() => {
-        if (selectedClassId && !classList.find(cls => cls.classId.toString() === selectedClassId)) {
-            setSelectedClassId("");
-        }
-    }, [classList, selectedClassId]);
+    const handleChange = (field: keyof StudentDetails, value: string) => {
+        setStudent((prev) => ({ ...prev, [field]: value }));
+    };
 
     return (
         <>
@@ -142,32 +140,52 @@ export default function StudentDetails() {
                         <div className="space-y-6">
                             <div>
                                 <Label htmlFor="identityCode">Identity Code</Label>
-                                <Input type="text" id="identityCode" value={student.identityCode} disabled />
+                                <Input id="identityCode" type="text" value={student.identityCode} disabled />
                             </div>
                             <div>
                                 <Label htmlFor="firstName">First Name</Label>
-                                <Input type="text" id="firstName" value={student.firstName}
-                                    onChange={(e) => setStudent({ ...student, firstName: e.target.value })} />
+                                <Input
+                                    id="firstName"
+                                    type="text"
+                                    value={student.firstName}
+                                    onChange={(e) => handleChange("firstName", e.target.value)}
+                                />
                             </div>
                             <div>
                                 <Label htmlFor="lastName">Last Name</Label>
-                                <Input type="text" id="lastName" value={student.lastName}
-                                    onChange={(e) => setStudent({ ...student, lastName: e.target.value })} />
+                                <Input
+                                    id="lastName"
+                                    type="text"
+                                    value={student.lastName}
+                                    onChange={(e) => handleChange("lastName", e.target.value)}
+                                />
                             </div>
                             <div>
                                 <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                                <Input type="date" id="dateOfBirth" value={student.dateOfBirth}
-                                    onChange={(e) => setStudent({ ...student, dateOfBirth: e.target.value })} />
+                                <Input
+                                    id="dateOfBirth"
+                                    type="date"
+                                    value={student.dateOfBirth}
+                                    onChange={(e) => handleChange("dateOfBirth", e.target.value)}
+                                />
                             </div>
                             <div>
                                 <Label htmlFor="phone">Phone</Label>
-                                <Input type="text" id="phone" value={student.phone}
-                                    onChange={(e) => setStudent({ ...student, phone: e.target.value })} />
+                                <Input
+                                    id="phone"
+                                    type="text"
+                                    value={student.phone}
+                                    onChange={(e) => handleChange("phone", e.target.value)}
+                                />
                             </div>
                             <div>
                                 <Label htmlFor="address">Address</Label>
-                                <Input type="text" id="address" value={student.address}
-                                    onChange={(e) => setStudent({ ...student, address: e.target.value })} />
+                                <Input
+                                    id="address"
+                                    type="text"
+                                    value={student.address}
+                                    onChange={(e) => handleChange("address", e.target.value)}
+                                />
                             </div>
                         </div>
                     </ComponentCard>
@@ -179,25 +197,29 @@ export default function StudentDetails() {
                             <div>
                                 <Label htmlFor="schoolId">School</Label>
                                 <Select
-                                    options={schoolList.map(school => ({ value: school.schoolId.toString(), label: school.schoolName }))}
+                                    value={student.schoolId?.toString() || ""}
+                                    options={schoolList.map((school) => ({
+                                        value: school.schoolId.toString(),
+                                        label: school.schoolName,
+                                    }))}
                                     className="dark:bg-dark-900"
-                                    onChange={(value) => setSelectedSchoolId(value)}
+                                    onChange={handleSchoolChange}
                                 />
                             </div>
                             <div>
                                 <Label htmlFor="classId">Class</Label>
                                 <Select
+                                    value={student.classId?.toString() || ""}
                                     options={
-                                        selectedSchoolId
-                                            ? classList.map(cls => ({ value: cls.classId.toString(), label: cls.className }))
+                                        student.schoolId && classList.length > 0
+                                            ? classList.map((cls) => ({
+                                                value: cls.classId.toString(),
+                                                label: cls.className,
+                                            }))
                                             : [{ value: "", label: "Please select a school" }]
                                     }
                                     className="dark:bg-dark-900"
-                                    onChange={(value) => {
-                                        if (selectedSchoolId) {
-                                            setSelectedClassId(value);
-                                        }
-                                    }}
+                                    onChange={(value) => handleChange("classId", value)}
                                 />
                             </div>
                             <div className="flex justify-end mt-4">
@@ -206,7 +228,6 @@ export default function StudentDetails() {
                         </div>
                     </ComponentCard>
                 </div>
-
             </div>
         </>
     );

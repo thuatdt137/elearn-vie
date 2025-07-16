@@ -56,7 +56,7 @@ export const createStudent = async (studentData: any) => {
     return response.data;
 };
 
-export const updateStudent = async (id: string, studentData: any) => {
+export const updateStudent = async (id: number, studentData: any) => {
     const response = await instance.put(`/Students/${id}`, studentData);
     return response.data;
 };

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface Option {
   value: string;
@@ -11,23 +11,38 @@ interface SelectProps {
   onChange: (value: string) => void;
   className?: string;
   defaultValue?: string;
+  value?: string; // external value from parent
 }
 
 const Select: React.FC<SelectProps> = ({
+  value,
   options,
   placeholder = "Select an option",
   onChange,
   className = "",
   defaultValue = "",
 }) => {
-  // Manage the selected value
-  const [selectedValue, setSelectedValue] = useState<string>(defaultValue);
+  // Local state only used when value is uncontrolled
+  const [internalValue, setInternalValue] = useState<string>(defaultValue);
+
+  const isControlled = value !== undefined;
+
+  // Ensure local state updates when defaultValue changes
+  useEffect(() => {
+    if (!isControlled) {
+      setInternalValue(defaultValue);
+    }
+  }, [defaultValue]);
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    setSelectedValue(value);
-    onChange(value); // Trigger parent handler
+    const selected = e.target.value;
+    if (!isControlled) {
+      setInternalValue(selected);
+    }
+    onChange(selected);
   };
+
+  const selectedValue = isControlled ? value : internalValue;
 
   return (
     <select
@@ -38,7 +53,6 @@ const Select: React.FC<SelectProps> = ({
       value={selectedValue}
       onChange={handleChange}
     >
-      {/* Placeholder option */}
       <option
         value=""
         disabled
@@ -46,7 +60,6 @@ const Select: React.FC<SelectProps> = ({
       >
         {placeholder}
       </option>
-      {/* Map over options */}
       {options.map((option) => (
         <option
           key={option.value}
