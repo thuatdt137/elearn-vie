@@ -57,6 +57,9 @@ function AppRoutes() {
 
   return (
     <Routes>
+      <Route element={<AppLayout />}>
+        <Route path="/avatars" element={<Avatars />} />
+      </Route>
       <Route element={<PublicRoute />}>
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
@@ -70,7 +73,6 @@ function AppRoutes() {
           <Route path="/form-elements" element={<FormElements />} />
           <Route path="/basic-tables" element={<BasicTables />} />
           <Route path="/alerts" element={<Alerts />} />
-          <Route path="/avatars" element={<Avatars />} />
           <Route path="/badge" element={<Badges />} />
           <Route path="/buttons" element={<Buttons />} />
           <Route path="/images" element={<Images />} />

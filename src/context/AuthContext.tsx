@@ -44,16 +44,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     useEffect(() => {
+        const noAuthRoutes = ["/avatars", "/signin", "/signup"];
         console.log("AuthContext useEffect: user =", user, "loading =", loading); // Debug
         setNavigateHandler(() => navigate("/signin", { replace: true }));
 
         const path = window.location.pathname;
-        if (path === "/signin" || path === "/signup") {
+
+        if (noAuthRoutes.includes(path)) {
             setLoading(false);
-            if (user) {
-                console.log("Redirecting from /signin to / due to user existing"); // Debug
-                navigate("/", { replace: true });
+            if (path === "/signin" || path === "/signup") {
+                if (user) {
+                    console.log("Redirecting from /signin to / due to user existing"); // Debug
+                    navigate("/", { replace: true });
+                }
             }
+            return;
         }
 
         const fetchUser = async () => {
