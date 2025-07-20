@@ -26,6 +26,7 @@ import Home from "./pages/Dashboard/Home";
 import Student from "./pages/Admin/Management/Student";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import StudentDetails from "./pages/Admin/Management/StudentDetails";
+import School from "./pages/Admin/SchoolManagement/School";
 
 const PublicRoute = () => {
   const { user, loading } = useAuth();
@@ -78,6 +79,7 @@ function AppRoutes() {
           <Route path="/bar-chart" element={<BarChart />} />
           <Route path="/student" element={<Student />} />
           <Route path="/student/:id" element={<StudentDetails />} />
+          <Route path="/school" element={<School />} />
         </Route>
       </Route>
       <Route element={<TrainingDepartmentRoute />}>

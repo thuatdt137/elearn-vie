@@ -18,7 +18,7 @@ import {
 import { useSidebar } from "../context/SidebarContext";
 import SidebarWidget from "./SidebarWidget";
 
-import { IoPeopleOutline } from "react-icons/io5";
+import { IoBusinessOutline, IoPeopleOutline } from "react-icons/io5";
 import { useAuth } from "../context/AuthContext";
 
 
@@ -46,9 +46,9 @@ const navItems: NavItem[] = [
     path: "/student",
   },
   {
-    icon: <UserCircleIcon />,
-    name: "User Profile",
-    path: "/profile",
+    icon: <IoBusinessOutline />,
+    name: "School",
+    path: "/school",
   },
   {
     name: "Forms",

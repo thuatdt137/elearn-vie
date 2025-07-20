@@ -79,4 +79,9 @@ export const getClassList = async ({ page, size, keyWord, schoolId }: { page?: n
 export const updateStudentStatus = async (id: number, status: string) => {
     const response = await instance.put(`/Students/${id}/status`, { status });
     return response.data;
-}
+};
+
+export const getTeacherList = async ({ page, size, keyWord }: { page?: number; size?: number; keyWord?: string }) => {
+    const response = await instance.get(`/Teacher?${page ? `pageNumber=${page}` : ""}${size ? `&pageSize=${size}` : ""}${keyWord ? `&keyWord=${keyWord}` : ""}`);
+    return response.data;
+};
