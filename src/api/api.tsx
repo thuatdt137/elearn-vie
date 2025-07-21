@@ -76,6 +76,11 @@ export const getClassList = async ({ page, size, keyWord, schoolId }: { page?: n
     return response.data;
 };
 
+export const createClass = async (classData: any) => {
+    const response = await instance.post("/Classes", classData);
+    return response.data;
+};
+
 export const updateStudentStatus = async (id: number, status: string) => {
     const response = await instance.put(`/Students/${id}/status`, { status });
     return response.data;
@@ -83,5 +88,15 @@ export const updateStudentStatus = async (id: number, status: string) => {
 
 export const getTeacherList = async ({ page, size, keyWord }: { page?: number; size?: number; keyWord?: string }) => {
     const response = await instance.get(`/Teacher?${page ? `pageNumber=${page}` : ""}${size ? `&pageSize=${size}` : ""}${keyWord ? `&keyWord=${keyWord}` : ""}`);
+    return response.data;
+};
+
+export const getAcademicYearList = async () => {
+    const response = await instance.get("/AcademicYears");
+    return response.data;
+}
+
+export const getClassById = async (id: number) => {
+    const response = await instance.get(`/Classes/${id}`);
     return response.data;
 };

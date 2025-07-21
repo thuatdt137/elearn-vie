@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         const path = window.location.pathname;
 
-        if (noAuthRoutes.includes(path)) {
+        if (noAuthRoutes.includes(path) || path.startsWith("/class")) {
             setLoading(false);
             if (path === "/signin" || path === "/signup") {
                 if (user) {

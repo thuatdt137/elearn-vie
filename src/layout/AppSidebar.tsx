@@ -14,6 +14,7 @@ import {
   PlugInIcon,
   TableIcon,
   UserCircleIcon,
+  BoxIcon, // sử dụng icon BoxIcon
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 import SidebarWidget from "./SidebarWidget";
@@ -49,6 +50,11 @@ const navItems: NavItem[] = [
     icon: <IoBusinessOutline />,
     name: "School",
     path: "/school",
+  },
+  {
+    icon: <BoxIcon />, // sử dụng icon BoxIcon
+    name: "Class",
+    path: "/class",
   },
   {
     name: "Forms",

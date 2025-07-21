@@ -27,6 +27,8 @@ import Student from "./pages/Admin/Management/Student";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import StudentDetails from "./pages/Admin/Management/StudentDetails";
 import School from "./pages/Admin/SchoolManagement/School";
+import Class from "./pages/Admin/ClassManagement/Class";
+import ClassDetail from "./pages/Admin/ClassManagement/ClassDetail";
 
 const PublicRoute = () => {
   const { user, loading } = useAuth();
@@ -59,6 +61,9 @@ function AppRoutes() {
     <Routes>
       <Route element={<AppLayout />}>
         <Route path="/avatars" element={<Avatars />} />
+        <Route path="/class" element={<Class />} />
+        <Route path="/class/:id" element={<ClassDetail />} />
+
       </Route>
       <Route element={<PublicRoute />}>
         <Route path="/signin" element={<SignIn />} />
